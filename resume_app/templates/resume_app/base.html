@@ -1,0 +1,53 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>{% block title %}Yo what up{% endblock %}</title>
+		<meta charset=”utf-8”> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" media="screen">
+		<link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}" media="screen">
+	</head>
+	<body>
+		<div class="container" id="container-wrapper">
+			<div class="row">
+				<div class="col-lg-3">
+					<!--<div id="header-bar"></div>-->
+					<!--<div id="header-img"><img src="http://placehold.it/200x150" /></div>-->
+					<div id="header" class="text-right">
+						<div id="header-text"><h1>Josh Cai</h1></div>
+						<p>Sophomore at UTD studying CS/Math</p>
+						<ul class="nav nav-pills nav-stacked">
+							<li class="active"><a href="{% url 'blog:index' %}">Blog</a></li>
+							<div class="sidebar-well">
+								{% block navigation %}
+								{% endblock %}
+							</div>
+							<li><a href="{% url 'blog:index' %}">About</a></li>
+							<li><a href="{% url 'blog:index' %}">Resume</a></li>
+							<li><a href="{% url 'blog:index' %}">Contact</a></li>
+							{% if request.session.logged_in %}
+							<br />
+							<li><a href="{% url 'blog:newpost' %}">New Post</a></li>
+							<li><a href="{% url 'blog:logout' %}">Logout</a></li>
+							{% endif %}
+						</ul>
+					</div>
+				</div>
+				<div id="content-wrapper" class="col-lg-6">
+					{% block content%}
+					<h1>Webpage!</h1>
+					testsst
+					{% endblock %}
+				</div>
+				<div id="sidebar" class="col-lg-3">
+				</div>
+			</div>
+		</div>
+
+
+
+		<script src="http://code.jquery.com/jquery.js"></script>
+		<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	</body>
+</html>

@@ -1,0 +1,109 @@
+/* forces scroll bar to be there*/
+html{
+	overflow-y: scroll;
+}
+/*debug*/
+
+div {
+    border: 1px solid #000000;
+}
+* :hover { outline: 2px dotted red }
+* * :hover { outline: 2px dotted green }
+* * * :hover { outline: 2px dotted orange }
+* * * * :hover { outline: 2px dotted blue }
+* * * * * :hover { outline: 1px solid red }
+* * * * * * :hover { outline: 1px solid green }
+* * * * * * * :hover { outline: 1px solid orange }
+* * * * * * * * :hover { outline: 1px solid blue }
+
+/*debug end*/
+/*
+body{
+	background-color: #FFF;
+}
+
+#dataset-bar{
+	height: 500px;
+	position: relatve;
+}
+
+#dataset-bar > div{
+	position: absolute;
+	width:100%;
+	left:0px;
+	bottom: 0;
+}
+
+#dataset-bar div li{
+	background-color: #E5E5E5;
+	border: 1px solid #EEE;
+}*/
+
+.centered{
+	margin: 0 auto;
+	float: none;
+}
+/*
+.overflow-fix{
+	overflow:auto;
+}
+
+.big-text{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 72px;
+	font-weight: bold;
+	text-shadow: 2px 2px #BBBBBB;
+}
+
+
+
+#header{
+	margin-top: 10px;
+}
+
+#content-wrapper-bg{
+	background-color:#FFF;
+}
+#graph{
+	width:100%;
+}
+
+#graph rect{
+	stroke: white;
+	fill: blue;
+}
+
+#graph rect:hover{
+	fill:red;
+}
+
+
+@media (max-width: 767px){
+    .resize{
+    	width:100%;
+    }
+
+    #realign-text{
+    	text-align: center;
+    }
+
+
+}
+
+@media (min-width: 767px) {
+    .resize{
+    	width:400px;
+    }
+
+    #realign-text{
+    	text-align: right;	
+    	margin-top: 23px;
+    }
+}
+
+@media (min-width: 979px){
+	#realign-text{
+    	padding-right: 40px;
+	}
+}
+*/

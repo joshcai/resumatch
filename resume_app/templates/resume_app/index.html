@@ -1,0 +1,26 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Resume Maker</title>
+		<meta charset=”utf-8”> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" media="screen">
+		<link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}" media="screen">
+	</head>
+	<body>
+		<div class="container" id="container-wrapper">
+			<div class="row">
+				<div id="content-wrapper" class="col-md-8 centered">
+					{% block content%}
+					<h1>Webpage!</h1>
+					testsst
+					{% endblock %}
+				</div>
+			</div>
+		</div>
+
+		<script src="http://code.jquery.com/jquery.js"></script>
+		<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	</body>
+</html>
