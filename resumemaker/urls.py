@@ -8,7 +8,7 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'resumemaker.views.home', name='home'),
     # url(r'^resumemaker/', include('resumemaker.foo.urls')),
-
+	url(r'^', include('resume_app.urls', namespace="resume")),
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
