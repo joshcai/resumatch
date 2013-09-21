@@ -6,6 +6,7 @@ from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
+from django.core.files import File
 import datetime
 
 from resume_app.models import User, Edu, Exp, Tag, Skill, Skill_Set, Honor, Additional, Additional_Section, Info

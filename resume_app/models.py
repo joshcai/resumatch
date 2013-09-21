@@ -1,7 +1,9 @@
 from django.db import models
+from django.core.files.storage import FileSystemStorage
 
 # Create your models here.
 
+fs = FileSystemStorage()
 
 class User(models.Model):
 	username = models.CharField(max_length=120)
@@ -84,6 +86,11 @@ class Additional_Section(models.Model):
 		return self.name
 class Info(models.Model):
 	user_id = models.IntegerField()
+
+
+class Resume(models.Model):
+	user_id = models.ForeignKey(User)
+	resume = models.FileField(upload_to='')
 
 
 # class Post(models.Model):
