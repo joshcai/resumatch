@@ -112,6 +112,42 @@ def education(request):
 		)
 		e.save()
 	return HttpResponseRedirect(reverse('resume_app:build'))
+//Experience controller
+def experience(request):
+	if request.method == 'POST':
+		# d = datetime.datetime.now()
+		user = User.objects.get(username=request.session['logged_in'])
+		e = Exp(user_id=user,
+			company = request.POST['company'],
+			position =request.POST['position'],
+			location = request.POST['location'],
+			start = request.POST['start'],
+			finish = request.POST['finish'],
+			# tags = models.ManyToManyField(Tag)
+			descriptions = request.POST['description'],
+			# date=d,
+			# date_str=d.strftime('%B %d, %Y')
+		)
+		e.save()
+	return HttpResponseRedirect(reverse('resume_app:build'))
+
+//Honors Controller
+def honors(request):
+	if request.method == 'POST':
+		# d = datetime.datetime.now()
+		user = User.objects.get(username=request.session['logged_in'])
+		e = Honors(user_id=user,
+			name = request.POST['name'],
+			position =request.POST['position'],
+			location = request.POST['location'],
+			date = request.POST['date'],
+			# tags = models.ManyToManyField(Tag)
+			descriptions = request.POST['description'],
+			# date=d,
+			# date_str=d.strftime('%B %d, %Y')
+		)
+		e.save()
+	return HttpResponseRedirect(reverse('resume_app:build'))
 
 def match(request):
 	request.session['home'] = ''
@@ -154,7 +190,7 @@ def match(request):
 # 			elif request.session[tag.descript]:
 # 				query = query | Q(tags__descript=tag.descript)
 # 	blog_entries = Post.objects.order_by('-date').distinct().filter(query).exclude(deleted=True)
-# 	context ={ 
+# 	context ={
 # 		'blog_entries': blog_entries[(float(page_num)-1)*5:float(page_num)*5],
 # 		'page_num': page_num,
 # 		'request': request,
@@ -165,7 +201,7 @@ def match(request):
 # 	if float(page_num) > 1:
 # 		context['prev'] = True
 # 	if float(page_num)*5 < len(blog_entries): # this can be optimized later - (code is already hitting database once)
-# 		context['next'] = True 
+# 		context['next'] = True
 
 # 	return render(request, 'blog/index.html', context)
 
@@ -201,7 +237,7 @@ def match(request):
 # 		post = get_object_or_404(Post, pk=post_id)
 # 		tags = Tag.objects.all()
 # 		context={
-# 			'post': post,	
+# 			'post': post,
 # 			'url': reverse('blog:update', kwargs={'post_id': post_id}),
 # 			'title': "Update",
 # 			'request': request,
@@ -223,7 +259,7 @@ def match(request):
 # 				context['subject'] = request.POST['subject']
 # 				context['content'] = request.POST['content']
 # 				context['error_message'] = "Please fill in all fields<br />"
-# 		return render(request, 'blog/newpost.html', context) 
+# 		return render(request, 'blog/newpost.html', context)
 # 	else:
 # 		return HttpResponseRedirect(reverse('blog:index'))
 
@@ -235,7 +271,7 @@ def match(request):
 # 			return HttpResponseRedirect(reverse('blog:index'))
 # 		else:
 # 			context['error_message'] = "Invalid password<br />"
-# 	return render(request, 'blog/login.html', context) 
+# 	return render(request, 'blog/login.html', context)
 
 # def logout(request):
 # 	request.session['logged_in'] = False

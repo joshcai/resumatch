@@ -1,6 +1,4 @@
 {% extends "resume_app/base.html" %}
-
-
 {% block content %}
   <div class="row">
     <div class="col-lg-10 centered well">
@@ -37,5 +35,79 @@
         </fieldset>
       </form>
     </div>
+  </div>
+  <!-- Experience fields-->
+  <div class="row">
+      <div class="col-lg-10 centered well">
+        <!-- <h2>Experience</h2> -->
+        <h1>Experience</h1>
+        {% if experiences %}
+          {% for exp in experiences %}
+                <h3>{{ exp.company }}</h3>
+
+            <p>{{ exp.position }}, {{ exp.location }} &nbsp;&nbsp;&nbsp;{{exp.start}} - {{ exp.finish}}</p>
+            <p>{{ exp.descriptions }}</p>
+          {% endfor %}
+        {% endif %}
+        <br />
+        <form action="{% url 'resume_app:update_education' %}" method="post">
+          <fieldset>
+            {% csrf_token %}
+            <legend>Add Experience</legend>
+            <!--<label>Subject</label>-->
+            <input type="text" name="company" placeholder="Company" class="form-control" />
+            <br />
+            <input type="text" name="position" placeholder="Position" class="form-control" />
+            <br />
+            <input type="text" name="location" placeholder="Location" class="form-control" />
+            <br />
+            <input type="text" name="start"  placeholder="Start Date" class="form-control" />
+            <br />
+            <input type="text" name="finish"  placeholder="End Date" class="form-control" />
+            <br />
+            <!--<label>Content</label>-->
+            <textarea rows="3" name="description" placeholder="Description" class="form-control"></textarea>
+            <br />
+            {{ error_message | safe }}
+            <button type="submit" class="btn">Submit</button>
+          </fieldset>
+        </form>
+      </div>
+  </div>
+  <!-- Honors-->
+    <div class="row">
+        <div class="col-lg-10 centered well">
+          <!-- <h2>Honors</h2> -->
+          <h1>Honors</h1>
+          {% if honors %}
+            {% for hon in honors %}
+                  <h3>{{ hon.name }}</h3>
+
+              <p>{{ hon.location }}, {{ hon.date }}</p>
+              <p>{{ hon.descriptions }}</p>
+            {% endfor %}
+          {% endif %}
+          <br />
+          <form action="{% url 'resume_app:update_education' %}" method="post">
+            <fieldset>
+              {% csrf_token %}
+              <legend>Add New Honors</legend>
+              <!--<label>Subject</label>-->
+              <input type="text" name="name" placeholder="Name" class="form-control" />
+              <br />
+              <input type="text" name="position" placeholder="Position" class="form-control" />
+              <br />
+              <input type="text" name="location" placeholder="Location" class="form-control" />
+              <br />
+              <input type="text" name="date"  placeholder="Date" class="form-control" />
+              <br />
+              <!--<label>Content</label>-->
+              <textarea rows="3" name="description" placeholder="Description" class="form-control"></textarea>
+              <br />
+              {{ error_message | safe }}
+              <button type="submit" class="btn">Submit</button>
+            </fieldset>
+          </form>
+        </div>
   </div>
 {% endblock %}
