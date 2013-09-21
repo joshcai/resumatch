@@ -1,0 +1,19 @@
+{% extends "resume_app/base.html" %}
+
+
+{% block content %}
+<form action="{% url 'resume_app:login' %}" method="post">
+	<fieldset>
+		{% csrf_token %}
+		<legend>Login</legend>
+		<!--<label>Subject</label>-->
+		<input type="text" name="username" value="{{ user.name }}" placeholder="Username" class="span6" />
+		<br />
+		<!--<label>Content</label>-->
+		<input type="password" name="password" placeholder="Password" class="span6" />
+		<br />
+		{{ error_message | safe }}
+		<button type="submit" class="btn">Submit</button>
+	</fieldset>
+</form>
+{% endblock %}

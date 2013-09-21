@@ -1,0 +1,30 @@
+{% extends "resume_app/base.html" %}
+
+
+{% block content %}
+<div class="row">
+	<div id="content-wrapper" class="col-md-8 centered">
+		<h1>Webpage!</h1>
+		testsst
+	</div>
+</div>
+<form action="{{ url }}" method="post">
+	<fieldset>
+		{% csrf_token %}
+		<legend>{{ title }}</legend>
+		<!--<label>Subject</label>-->
+		<input type="text" name="name" value="{{ user.name }}" placeholder="Name" class="span6" />
+		<br />
+		<input type="text" name="username" value="{{ user.name }}" placeholder="Username" class="span6" />
+		<br />
+		<input type="text" name="email" value="{{ user.email }}" placeholder="Email" class="span6" />
+		<br />
+		<!--<label>Content</label>-->
+		<input type="password" name="password" placeholder="Password" class="span6" />
+		<br />
+		<input type="password" name="password_confirm" placeholder="Password" class="span6" />
+		<br />
+		<button type="submit" class="btn">Submit</button>
+	</fieldset>
+</form>
+{% endblock %}

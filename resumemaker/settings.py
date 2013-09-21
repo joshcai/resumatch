@@ -20,12 +20,20 @@ else:
     import secrets
     DEBUG = True
     DATABASES = {
+        # 'default': {
+        #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        #     'NAME': 'resume_db',
+        #     'USER': 'django_login',
+        #     'PASSWORD': secrets.db_password,
+        #     'HOST': 'localhost',
+        #     'PORT':'',
+        # }
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.mysql',
             'NAME': 'resume_db',
-            'USER': 'django_login',
+            'USER': 'root',
             'PASSWORD': secrets.db_password,
-            'HOST': 'localhost',
+            'HOST': '',
             'PORT':'',
         }
     }

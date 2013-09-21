@@ -17,7 +17,13 @@ div {
 * * * * * * * * :hover { outline: 1px solid blue }
 
 /*debug end*/
+
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
 /*
+
 body{
 	background-color: #FFF;
 }

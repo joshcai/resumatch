@@ -2,48 +2,71 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>{% block title %}Yo what up{% endblock %}</title>
+		<title>{% block title %}ResuMatch{% endblock %}</title>
 		<meta charset=”utf-8”> 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="description" content="Resume Maker">
+	    <meta name="author" content="Josh Cai">
+	    <!-- <link rel="shortcut icon" href="../../assets/ico/favicon.png"> -->
 		<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" media="screen">
 		<link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}" media="screen">
 	</head>
-	<body>
-		<div class="container" id="container-wrapper">
-			<div class="row">
-				<div class="col-lg-3">
-					<!--<div id="header-bar"></div>-->
-					<!--<div id="header-img"><img src="http://placehold.it/200x150" /></div>-->
-					<div id="header" class="text-right">
-						<div id="header-text"><h1>Josh Cai</h1></div>
-						<p>Sophomore at UTD studying CS/Math</p>
-						<ul class="nav nav-pills nav-stacked">
-							<li class="active"><a href="{% url 'blog:index' %}">Blog</a></li>
-							<div class="sidebar-well">
-								{% block navigation %}
-								{% endblock %}
-							</div>
-							<li><a href="{% url 'blog:index' %}">About</a></li>
-							<li><a href="{% url 'blog:index' %}">Resume</a></li>
-							<li><a href="{% url 'blog:index' %}">Contact</a></li>
-							{% if request.session.logged_in %}
-							<br />
-							<li><a href="{% url 'blog:newpost' %}">New Post</a></li>
-							<li><a href="{% url 'blog:logout' %}">Logout</a></li>
-							{% endif %}
-						</ul>
-					</div>
-				</div>
-				<div id="content-wrapper" class="col-lg-6">
-					{% block content%}
-					<h1>Webpage!</h1>
-					testsst
-					{% endblock %}
-				</div>
-				<div id="sidebar" class="col-lg-3">
-				</div>
-			</div>
-		</div>
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">ResuMatch</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+          <form action="{% url 'resume_app:login' %}" method="post" class="navbar-form navbar-right">
+  			{% csrf_token %}
+            <div class="form-group">
+              <input type="text" name="username" placeholder="Username" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" name="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
+    {% block jumbo %}
+
+    {% endblock jumbo %}
+
+    <div class="container">
+    	{% block content %}
+    	{% endblock content %}
+      <hr>
+
+      <footer>
+        <p>&copy; ResuMatch 2013</p>
+      </footer>
+    </div> <!-- /container -->
 
 
 
