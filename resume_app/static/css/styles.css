@@ -4,7 +4,7 @@ html{
 }
 /*debug*/
 
-div {
+/*div {
     border: 1px solid #000000;
 }
 * :hover { outline: 2px dotted red }
@@ -15,7 +15,7 @@ div {
 * * * * * * :hover { outline: 1px solid green }
 * * * * * * * :hover { outline: 1px solid orange }
 * * * * * * * * :hover { outline: 1px solid blue }
-
+*/
 /*debug end*/
 
 body {

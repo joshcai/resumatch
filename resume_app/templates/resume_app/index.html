@@ -3,30 +3,29 @@
 {% block jumbo %}
     <div class="jumbotron">
       <div class="container">
-        <h1>Hello, world!</h1>
-        <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-        <p><a class="btn btn-primary btn-lg">Learn more &raquo;</a> &nbsp;<a href="{% url 'resume_app:signup' %}" class="btn btn-primary btn-lg">Sign up now &raquo;</a></p>
+        <h1>ResuMatch</h1>
+        <p>Faster, Flexible Resumes Matched to Jobs! </p>
+        <p><a href="{% url 'resume_app:signup' %}" class="btn btn-primary btn-lg">Sign up now &raquo;</a></p>
       </div>
     </div>
 {% endblock jumbo %}
 
 {% block content %}
-  <!-- Example row of columns -->
   <div class="row">
     <div class="col-lg-4">
-      <h2>Heading</h2>
-      <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-      <p><a class="btn btn-default" href="#">View details &raquo;</a></p>
+      <h2>Explore</h2>
+      <p>Don’t just rely on automated systems! If people are judging your resume, get other people’s opinions on them first! Get critiques on your resume for free. Compare your resume to other submitted resumes. Consider suggestions made by others and build a more competitive resume! </p>
+      <p><a class="btn btn-default" href="{% url 'resume_app:explore' %}">View details &raquo;</a></p>
     </div>
     <div class="col-lg-4">
-      <h2>Heading</h2>
-      <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-      <p><a class="btn btn-default" href="#">View details &raquo;</a></p>
+      <h2>Build</h2>
+      <p>Build your Resume. Build your future. Build your dream job. At ResuMatch, we help you create your resume using a few simple steps. We let you customize the way, recruiters would like to see you and help you leave a lasting impression on them.</p>
+      <p><a class="btn btn-default" href="{% url 'resume_app:build' %}">View details &raquo;</a></p>
    </div>
     <div class="col-lg-4">
-      <h2>Heading</h2>
-      <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-      <p><a class="btn btn-default" href="#">View details &raquo;</a></p>
+      <h2>Match</h2>
+      <p>ResuMatch is the resume site that will match your resume to job listings! After you build your resume, ResuMatch will look through listings on leading job sites to find jobs that fit your strong suit. This phase is another step in making your job search faster and more efficient.</p>
+      <p><a class="btn btn-default" href="{% url 'resume_app:match' %}">View details &raquo;</a></p>
     </div>
   </div>
 

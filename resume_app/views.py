@@ -1,16 +1,21 @@
 # Create your views here.
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.core.exceptions import ObjectDoesNotExist
 from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 import datetime
 
-from resume_app.models import User
+from resume_app.models import User, Edu, Exp, Tag, Skill, Skill_Set, Honor, Additional, Additional_Section, Info
 
 # from resume_app.models import Users
 def index(request):
+	request.session['home'] = 'a'
+	request.session['explore'] = ''
+	request.session['build'] = ''
+	request.session['match'] = ''
 	return render(request, 'resume_app/index.html', {'request':request})
 
 def signup(request):
@@ -31,7 +36,7 @@ def signup(request):
 				'username': request.POST['username'],
 				'name': request.POST['name'],
 				'email': request.POST['email'],
-				'error_message': "Please fill in all fields<br />",
+				'error_message': "Please fill in all fields or password mismatch <br />",
 				'request':request,
 			}
 			return render(request, 'resume_app/signup.html', context)
@@ -40,10 +45,13 @@ def signup(request):
 def login(request):
 	if request.method == 'POST':
 		if request.POST['username']:
-			user = User.objects.get(username=request.POST['username'])
-		if request.POST['password'] and request.POST['password'] == user.password:
+			userexists = True
+			try:
+				user = User.objects.get(username=request.POST['username'])
+			except ObjectDoesNotExist:
+				userexists = False
+		if request.POST['username'] and userexists and request.POST['password'] and request.POST['password'] == user.password:
 			request.session['logged_in'] = user.username
-			print 'logged in'
 			return render(request, 'resume_app/index.html', {'request':request})
 		else:
 			context={
@@ -51,19 +59,67 @@ def login(request):
 				'error_message': "Username or password incorrect <br/>",
 				'request': request,
 			}
-			return render(request, 'resume_app/login.html', context)
+			return HttpResponseRedirect(reverse('resume_app:index'))
 	return render(request, 'resume_app/login.html', {'request':request})
 
 def logout(request):
 	try:
 		del request.session['logged_in']
-		print 'logging out'
 	except KeyError:
 		pass
 	return HttpResponseRedirect(reverse('resume_app:index'))
 
 
+def explore(request):
+	request.session['home'] = ''
+	request.session['explore'] = 'a'
+	request.session['build'] = ''
+	request.session['match'] = ''
+	if request.session.get('logged_in',False):
+		return render(request, 'resume_app/index.html', {'request':request})
+	return render(request, 'resume_app/explore_static.html', {'request':request})
 
+def build(request):
+	request.session['home'] = ''
+	request.session['explore'] = ''
+	request.session['build'] = 'a'
+	request.session['match'] = ''
+	if request.session.get('logged_in',False):
+		user = User.objects.get(username=request.session['logged_in'])
+		educations = Edu.objects.all().filter(user_id = user)
+		context={
+				'request':request,
+				'educations':educations,
+			}
+		return render(request, 'resume_app/build.html', context)
+	return render(request, 'resume_app/build_static.html', {'request':request})
+
+def education(request):
+	if request.method == 'POST':
+		# d = datetime.datetime.now()
+		user = User.objects.get(username=request.session['logged_in'])
+		e = Edu(user_id=user,
+			university = request.POST['university'],
+			gpa =request.POST['gpa'],
+			degree = request.POST['degree'],
+			start = request.POST['start'],
+			finish = request.POST['finish'],
+			# tags = models.ManyToManyField(Tag)
+			descriptions = request.POST['description'],
+			# date=d,
+			# date_str=d.strftime('%B %d, %Y')
+		)
+		e.save()
+	return HttpResponseRedirect(reverse('resume_app:build'))
+
+def match(request):
+	request.session['home'] = ''
+	request.session['explore'] = ''
+	request.session['build'] = ''
+	request.session['match'] = 'a'
+	if request.session.get('logged_in',False):
+		return render(request, 'resume_app/index.html', {'request':request})
+	return render(request, 'resume_app/match_static.html', {'request':request})
 # 	def render_post(content):
 # 	array_str = content.splitlines()
 # 	new_content = ""

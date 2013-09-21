@@ -21,26 +21,20 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">ResuMatch</a>
+          <a class="navbar-brand" href="{% url 'resume_app:index' %}">ResuMatch</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="#">Action</a></li>
-                <li><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li class="divider"></li>
-                <li class="dropdown-header">Nav header</li>
-                <li><a href="#">Separated link</a></li>
-                <li><a href="#">One more separated link</a></li>
-              </ul>
-            </li>
+            <li {% if request.session.home %} class="active" {% endif %}><a href="{% url 'resume_app:index' %}">Home</a></li>
+            <li {% if request.session.explore %} class="active" {% endif %}><a href="{% url 'resume_app:explore' %}">Explore</a></li>
+            <li {% if request.session.build %} class="active" {% endif %}><a href="{% url 'resume_app:build' %}">Build</a></li>
+            <li {% if request.session.match %} class="active" {% endif %}><a href="{% url 'resume_app:match' %}">Match</a></li>
           </ul>
+          {% if request.session.logged_in %}
+          <div class="navbar-form navbar-right">
+          <a href="{% url 'resume_app:logout' %}"><button type="button" class="btn btn-success">Logout</button></a>
+	      </div>
+          {% else %}
           <form action="{% url 'resume_app:login' %}" method="post" class="navbar-form navbar-right">
   			{% csrf_token %}
             <div class="form-group">
@@ -51,6 +45,7 @@
             </div>
             <button type="submit" class="btn btn-success">Sign in</button>
           </form>
+          {% endif %}
         </div><!--/.navbar-collapse -->
       </div>
     </div>
