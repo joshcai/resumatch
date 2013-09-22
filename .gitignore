@@ -1,3 +1,5 @@
 *.pyc
 venv
+resume_app/generated
 secrets.py
+*.log

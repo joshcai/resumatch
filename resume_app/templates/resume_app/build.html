@@ -1,5 +1,34 @@
 {% extends "resume_app/base.html" %}
+
+{% load tagcheck %}
+
 {% block content %}
+  <div class="row spaced">
+    <div class="col-md-4">
+      <form action="{% url 'resume_app:create_tag' %}" method="post">
+        <fieldset>
+          {% csrf_token %}
+          <!--<label>Subject</label>-->
+          <input type="text" name="tag_name" placeholder="Tag Name" class="form-control" />
+          <button type="submit" class="btn">Create Tag</button>
+        </fieldset>
+      </form>
+    </div>
+    <div class="col-md-8 text-right">
+      <form action="{% url 'resume_app:generate' %}" method="post" class="form-inline" role="form">
+          {% if tags %}
+            {% for tag in tags %}
+              <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="{{tag.name}}"> {{tag.name}}
+                    </label>
+              </div>
+            {% endfor%}
+          {%endif%}
+        <button type="submit" class="btn btn-info">Generate</button>
+      </form>
+    </div>
+  </div>
   <div class="row">
     <div class="col-lg-10 centered well">
       <!-- <h2>Education</h2> -->
@@ -9,6 +38,12 @@
               <h3>{{ edu.university }}</h3>
           <p>{{ edu.degree }}, {{ edu.gpa }} &nbsp;&nbsp;&nbsp;{{edu.start}} - {{ edu.finish}}</p>
           <p>{{ edu.descriptions }}</p>
+          <p>Tagged:{% if edu.tags %}
+          {% for tag in edu.tags.all %}
+          {{tag.name}}
+          {% endfor %}
+          {% endif %}
+          </p>
         {% endfor %}
       {% endif %}
       <br />
@@ -30,12 +65,22 @@
           <!--<label>Content</label>-->
           <textarea rows="3" name="description" placeholder="Description" class="form-control"></textarea>
           <br />
+                    {% if tags %}
+            {% for tag in tags %}
+              <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="{{tag.name}}"> {{tag.name}}
+                    </label>
+              </div>
+            {% endfor%}
+          {%endif%}
           {{ error_message | safe }}
           <button type="submit" class="btn">Submit</button>
         </fieldset>
       </form>
     </div>
   </div>
+  <br />
   <!-- Experience fields-->
   <div class="row">
       <div class="col-lg-10 centered well">
@@ -47,10 +92,16 @@
 
             <p>{{ exp.position }}, {{ exp.location }} &nbsp;&nbsp;&nbsp;{{exp.start}} - {{ exp.finish}}</p>
             <p>{{ exp.descriptions }}</p>
+                      <p>Tagged:{% if exp.tags %}
+          {% for tag in exp.tags.all %}
+          {{tag.name}}
+          {% endfor %}
+          {% endif %}
+          </p>
           {% endfor %}
         {% endif %}
         <br />
-        <form action="{% url 'resume_app:update_education' %}" method="post">
+        <form action="{% url 'resume_app:update_experience' %}" method="post">
           <fieldset>
             {% csrf_token %}
             <legend>Add Experience</legend>
@@ -68,12 +119,22 @@
             <!--<label>Content</label>-->
             <textarea rows="3" name="description" placeholder="Description" class="form-control"></textarea>
             <br />
+            {% if tags %}
+            {% for tag in tags %}
+              <div class="checkbox">
+                    <label>
+                      <input type="checkbox"  name="{{tag.name}}"> {{tag.name}}
+                    </label>
+              </div>
+            {% endfor%}
+          {%endif%}
             {{ error_message | safe }}
             <button type="submit" class="btn">Submit</button>
           </fieldset>
         </form>
       </div>
   </div>
+  <br />
   <!-- Honors-->
     <div class="row">
         <div class="col-lg-10 centered well">
@@ -85,17 +146,21 @@
 
               <p>{{ hon.location }}, {{ hon.date }}</p>
               <p>{{ hon.descriptions }}</p>
+                        <p>Tagged:{% if hon.tags %}
+          {% for tag in hon.tags.all %}
+          {{tag.name}}
+          {% endfor %}
+          {% endif %}
+          </p>
             {% endfor %}
           {% endif %}
           <br />
-          <form action="{% url 'resume_app:update_education' %}" method="post">
+          <form action="{% url 'resume_app:update_honors' %}" method="post">
             <fieldset>
               {% csrf_token %}
               <legend>Add New Honors</legend>
               <!--<label>Subject</label>-->
               <input type="text" name="name" placeholder="Name" class="form-control" />
-              <br />
-              <input type="text" name="position" placeholder="Position" class="form-control" />
               <br />
               <input type="text" name="location" placeholder="Location" class="form-control" />
               <br />
@@ -104,6 +169,72 @@
               <!--<label>Content</label>-->
               <textarea rows="3" name="description" placeholder="Description" class="form-control"></textarea>
               <br />
+                {% if tags %}
+            {% for tag in tags %}
+              <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="{{tag.name}}"> {{tag.name}}
+                    </label>
+              </div>
+            {% endfor%}
+          {%endif%}
+              {{ error_message | safe }}
+              <button type="submit" class="btn">Submit</button>
+            </fieldset>
+          </form>
+        </div>
+  </div>
+  <br />
+   <div class="row">
+        <div class="col-lg-10 centered well">
+          <!-- <h2>Honors</h2> -->
+          <h1>Skills</h1>
+          {% if sets %}
+            {% for set in sets %}
+              <h3>{{set.name}}</h3>
+              {% if skills %}
+                {% for skill in skills %}
+                    {% if set|tagcheck:skill.skill_set %}
+                      {{skill.name}}
+                    {% endif %}
+
+                {% endfor %}
+              {% endif %}
+                                            <p>Tagged:{% if set.tags %}
+          {% for tag in set.tags.all %}
+          {{tag.name}}
+          {% endfor %}
+          {% endif %}
+          </p>
+              <form action="{% url 'resume_app:add_skill' %}" class="form-inline" role="form" method="post">
+                <fieldset>
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <input type="text" name="name" placeholder="Add a Skill" class="form-control col-md-3" />
+                  </div>  
+                  <input type="hidden" name="skill_set" value="{{set.id}}" />
+                  <button type="submit" class="btn">Add</button>
+                </fieldset>
+              </form>
+            {% endfor %}
+          {% endif %}
+          <br />
+          <form action="{% url 'resume_app:update_skill_set' %}" method="post">
+            <fieldset>
+              {% csrf_token %}
+              <legend>Add New Skill Set</legend>
+              <!--<label>Subject</label>-->
+              <input type="text" name="name" placeholder="Name of skill set" class="form-control" />
+              <br />
+                        {% if tags %}
+            {% for tag in tags %}
+              <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="{{tag.name}}"> {{tag.name}}
+                    </label>
+              </div>
+            {% endfor%}
+          {%endif%}
               {{ error_message | safe }}
               <button type="submit" class="btn">Submit</button>
             </fieldset>

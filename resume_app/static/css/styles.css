@@ -22,7 +22,9 @@ body {
   padding-top: 50px;
   padding-bottom: 20px;
 }
+
 /*
+
 
 body{
 	background-color: #FFF;
@@ -48,6 +50,10 @@ body{
 .centered{
 	margin: 0 auto;
 	float: none;
+}
+.spaced{
+	margin-top:25px;
+	margin-bottom: 25px;
 }
 /*
 .overflow-fix{

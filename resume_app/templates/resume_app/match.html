@@ -1,0 +1,52 @@
+{% extends "resume_app/base.html" %}
+
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-8 centered text-center">
+    	
+      {% if add_permission %}
+        <form action="{% url 'resume_app:add_job' %}" method="post">
+          <fieldset>
+            {% csrf_token %}
+            <legend>Add Job</legend>
+            <!--<label>Subject</label>-->
+            <input type="text" name="title" placeholder="Job Title" class="form-control" />
+            <br />
+            <!--<label>Content</label>-->
+            <textarea rows="3" name="description" placeholder="Description" class="form-control"></textarea>
+            <br />
+            <textarea rows="3" name="skills" placeholder="Skills" class="form-control"></textarea>
+            <br />
+            {{ error_message | safe }}
+            <button type="submit" class="btn">Add</button>
+          </fieldset>
+        </form>
+      {% endif %}
+    	{%if resumes %}
+    		<h2>Match Resumes</h2>
+    		{% for resume in resumes %}
+    			<a href="/matched/{{resume.resume}}">{{resume.resume}}</a>
+    			<br />
+    		{% endfor %}
+    	{% endif %}
+
+    	{% if matched %}
+    		<h3>{{job.title}}</h3>
+	        <p>{{job.description}}</p>
+	        <p>{{job.skills}}</p>
+
+    	{% else %}
+	      {% if jobs %}
+	      <h2> Job Listings </h2>
+	        {% for job in jobs %}
+	          <h3>{{job.title}}</h3>
+	          <p>{{job.description}}</p>
+	          <p>{{job.skills}}</p>
+	        {% endfor %}
+	      {% endif %}
+      	{% endif %}
+
+    </div>
+  </div>
+{% endblock %}

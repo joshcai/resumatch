@@ -45,18 +45,20 @@ class Exp(models.Model):
 		return self.company
 
 
+class Skill_Set(models.Model):
+	user_id = models.ForeignKey(User)
+	name = models.CharField(max_length=120)
+	tags = models.ManyToManyField(Tag)
+	def __unicode__(self):
+		return str(self.id)
+
+
 class Skill(models.Model):
+	skill_set = models.ForeignKey(Skill_Set)
 	name = models.CharField(max_length=120)
 	def __unicode__(self):
 		return self.name
 
-class Skill_Set(models.Model):
-	user_id = models.ForeignKey(User)
-	name = models.CharField(max_length=120)
-	skills = models.ManyToManyField(Skill)
-	tags = models.ManyToManyField(Tag)
-	def __unicode__(self):
-		return self.name
 
 class Honor(models.Model):
 	user_id = models.ForeignKey(User)
@@ -84,14 +86,29 @@ class Additional_Section(models.Model):
 	sections = models.ManyToManyField(Additional)
 	def __unicode__(self):
 		return self.name
+
 class Info(models.Model):
-	user_id = models.IntegerField()
+	user_id = models.ForeignKey(User)
 
 
 class Resume(models.Model):
 	user_id = models.ForeignKey(User)
-	resume = models.FileField(upload_to='')
+	resume = models.CharField(max_length=120)
+	upvotes = models.IntegerField()
+	skill_string = models.TextField(default="")
+	private = models.BooleanField()
 
+
+
+class Comment(models.Model):
+	resume = models.ForeignKey(Resume)
+	user_id = models.ForeignKey(User)
+	comment = models.CharField(max_length=200)
+
+class Job(models.Model):
+	title = models.CharField(max_length=120)
+	description = models.TextField(default="")
+	skills = models.TextField(default="")
 
 # class Post(models.Model):
 # 	subject = models.CharField(max_length=120)

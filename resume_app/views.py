@@ -7,9 +7,11 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.core.files import File
+import os
+import StringCompare
 import datetime
 
-from resume_app.models import User, Edu, Exp, Tag, Skill, Skill_Set, Honor, Additional, Additional_Section, Info
+from resume_app.models import User, Job,  Edu, Exp, Tag, Skill, Skill_Set, Honor, Additional, Additional_Section, Info, Resume, Comment
 
 # from resume_app.models import Users
 def index(request):
@@ -77,7 +79,12 @@ def explore(request):
 	request.session['build'] = ''
 	request.session['match'] = ''
 	if request.session.get('logged_in',False):
-		return render(request, 'resume_app/index.html', {'request':request})
+		resumes = Resume.objects.all().exclude(private=1)
+		context = {
+				'request':request,
+				'resumes':resumes,
+		}
+		return render(request, 'resume_app/explore.html', context)
 	return render(request, 'resume_app/explore_static.html', {'request':request})
 
 def build(request):
@@ -88,12 +95,164 @@ def build(request):
 	if request.session.get('logged_in',False):
 		user = User.objects.get(username=request.session['logged_in'])
 		educations = Edu.objects.all().filter(user_id = user)
+		experiences = Exp.objects.all().filter(user_id = user)
+		honors = Honor.objects.all().filter(user_id = user)
+		sets = Skill_Set.objects.all().filter(user_id= user)
+		tags = Tag.objects.all().filter(user_id=user)
+		skills = Skill.objects.all()
 		context={
 				'request':request,
 				'educations':educations,
+				'experiences':experiences,
+				'honors':honors,
+				'sets':sets,
+				'tags':tags,
+				'skills':skills,
 			}
+
+
 		return render(request, 'resume_app/build.html', context)
 	return render(request, 'resume_app/build_static.html', {'request':request})
+
+def generate(request):
+	template = r"""
+\documentclass[line,margin]{res}
+%\usepackage{helvetica} % uses helvetica postscript font (download helvetica.sty)
+%\usepackage{newcent}   % uses new century schoolbook postscript font 
+
+\begin{document}"""
+	user = User.objects.get(username=request.session['logged_in'])
+	template+=r"\name{%s}" % user.name
+	template+=r"""
+	\begin{resume}
+ 
+\section{OBJECTIVE}       A position in the field of computers with special 
+                interests in business applications programming, 
+                information processing, and management systems. 
+ 
+ 
+\section{EDUCATION} {\sl Bachelor of Science,} Interdisciplinary Science \\
+                % \sl will be bold italic in New Century Schoolbook (or
+	        % any postscript font) and just slanted in
+		% Computer Modern (default) font
+                Rensselaer Polytechnic Institute, Troy, NY, 
+                expected December 1990 \\
+                Concentration: Computer Science \\
+                Minor: Management 
+ 
+ 
+\section{COMPUTER \\ SKILLS} {\sl Languages \& Software:} COBOL, IFPS, Focus, 
+         Megacalc, Pascal, Modula2, C, APL, SNOBOL, 
+                FORTRAN, LISP, SPIRES, BASIC, VSPC Autotab, 
+                IBM 370 Assembler, Lotus 1-2-3. \\
+                {\sl Operating Systems:} MTS, TSO, Unix.
+ 
+\section{EXPERIENCE} {\sl Business Applications Programmer} \hfill Fall 1990 \\
+                Allied-Signal Bendix Friction Materials Division, 
+                Financial Planning Department, Latham, NY
+                 \begin{itemize}  \itemsep -2pt % reduce space between items
+                 \item Developed four "user friendly" forecasting 
+                    systems each of which produces 18 to 139 
+                    individual reports. 
+                \item   Developed or improved almost all IFPS 
+                    programs used for financial reports. 
+                \end{itemize}
+ 
+                {\sl Research Programmer} \hfill            Summer 1990 \\
+                Psychology Department, Rensselaer Polytechnic 
+                Institute 
+                 \begin{itemize}  \itemsep -2pt %reduce space between items
+                 \item Performed computer aided statistical analysis 
+                    of data. 
+                 \end{itemize} 
+                {\sl Assistant Manager} \hfill        Summers 1988-89 \\
+                Thunder Restaurant, Canton, CT
+                  \begin{itemize}
+                   \item Recognized need for, developed, and wrote 
+                    employee training manual. Performed various 
+                    duties including cooking, employee training, 
+                    ordering, and inventory control. 
+                   \end{itemize} 
+ 
+\section{COMMUNITY \\ SERVICE}  Organized and directed the 1988 and 1989 Grand 
+                 Marshall Week \newline ``Basketball Marathon.'' A 24 hour 
+                charity event to benefit the Troy Boys Club. Over 
+                250 people participated each year. 
+
+\section{EXTRA-CURRICULAR \\ ACTIVITIES}             
+            Elected {\it House Manager}, Rho Phi Sorority \\
+            Elected {\it Sports Chairman} \\
+            Attended Krannet Leadership Conference \\
+                Headed delegation to Rho Phi Congress \\
+                Junior varsity basketball team \\
+                Participant, seven intramural athletic teams 
+ 
+
+\end{resume}
+\end{document}"""
+	file_name = ''.join(user.name.split())
+	f = open(file_name + '.tex', 'w')
+	f.write(template)
+	f.close()
+	print file_name
+	os.system('pdflatex ' + file_name + '.tex')
+	os.system('mv ' + file_name + '.pdf resume_app/generated/')
+	os.system('rm ' + file_name + '.log')
+	os.system('rm ' + file_name + '.tex')
+	return HttpResponseRedirect(reverse('resume_app:generated', kwargs={'file_name':file_name}))
+
+def generated(request, file_name):
+	return render(request, 'resume_app/generated.html', {'request':request, 'file_name':file_name})
+
+def display(request, file_name):
+	if request.method == 'POST' and request.POST['comment']:
+		user = User.objects.get(username=request.session['logged_in'])
+		resume = Resume.objects.filter(resume=file_name)[0]
+		com = Comment(comment=request.POST['comment'],user_id=user,resume=resume)
+		com.save()
+		return HttpResponseRedirect(reverse('resume_app:display', kwargs={'file_name':file_name}))
+	resume = Resume.objects.filter(resume=file_name)[0]
+	comments = Comment.objects.filter(resume=resume).order_by('pk').reverse()
+	return render(request, 'resume_app/display.html',{'request':request, 'resume':resume, 'comments':comments})
+
+def addskill(request):
+	if request.method == 'POST':
+		skill_set = Skill_Set.objects.filter(pk=request.POST['skill_set'])[0]
+		s = Skill(name=request.POST['name'], skill_set = skill_set)
+		s.save()
+	return HttpResponseRedirect(reverse('resume_app:build'))
+
+
+def save_resume(request):
+	if request.method == 'POST':
+		user = User.objects.get(username=request.session['logged_in'])
+		name = request.POST['file_name']
+		skill_string=''
+		skill_sets = Skill_Set.objects.filter(user_id=user)
+		for sets in skill_sets:
+			skill_string+=sets.name+' '
+			skills = Skill.objects.filter(skill_set=sets)
+			for skill in skills:
+				skill_string+=skill.name+' '
+		print skill_string
+		private = False
+		if 'private' in request.POST:
+			private = True
+		res = Resume(user_id=user,
+			resume=name,
+			upvotes=0,
+			private=private,
+			skill_string=skill_string,
+			)
+		res.save()
+		os.system('cp resume_app/generated/'+request.POST['old_file_name']+'.pdf resume_app/generated/' + request.POST['file_name']+'.pdf')
+	return HttpResponseRedirect(reverse('resume_app:generated', kwargs={'file_name':name}))
+
+	# with open("/home/josh/Desktop/projects/resumemaker/resume_app/generated/template.tex") as template:
+	# 	templ = File(template)
+	# 	print templ.read()
+
+
 
 def education(request):
 	if request.method == 'POST':
@@ -111,8 +270,12 @@ def education(request):
 			# date_str=d.strftime('%B %d, %Y')
 		)
 		e.save()
+		tags = Tag.objects.filter(user_id=user)
+		for tag in tags:
+			if tag.name in request.POST:
+				e.tags.add(tag)
 	return HttpResponseRedirect(reverse('resume_app:build'))
-//Experience controller
+#Experience controller
 def experience(request):
 	if request.method == 'POST':
 		# d = datetime.datetime.now()
@@ -129,16 +292,19 @@ def experience(request):
 			# date_str=d.strftime('%B %d, %Y')
 		)
 		e.save()
+		tags = Tag.objects.filter(user_id=user)
+		for tag in tags:
+			if tag.name in request.POST:
+				e.tags.add(tag)
 	return HttpResponseRedirect(reverse('resume_app:build'))
 
-//Honors Controller
+#Honors Controller
 def honors(request):
 	if request.method == 'POST':
 		# d = datetime.datetime.now()
 		user = User.objects.get(username=request.session['logged_in'])
-		e = Honors(user_id=user,
+		h = Honor(user_id=user,
 			name = request.POST['name'],
-			position =request.POST['position'],
 			location = request.POST['location'],
 			date = request.POST['date'],
 			# tags = models.ManyToManyField(Tag)
@@ -146,26 +312,77 @@ def honors(request):
 			# date=d,
 			# date_str=d.strftime('%B %d, %Y')
 		)
-		e.save()
+		h.save()
+		tags = Tag.objects.filter(user_id=user)
+		for tag in tags:
+			if tag.name in request.POST:
+				h.tags.add(tag)
 	return HttpResponseRedirect(reverse('resume_app:build'))
 
+def skillset(request):
+	if request.method == 'POST':
+		# d = datetime.datetime.now()
+		user = User.objects.get(username=request.session['logged_in'])
+		s = Skill_Set(user_id=user,
+			name = request.POST['name'],
+			# tags = models.ManyToManyField(Tag)
+		)
+		s.save()
+		tags = Tag.objects.filter(user_id=user)
+		for tag in tags:
+			if tag.name in request.POST:
+				s.tags.add(tag)
+	return HttpResponseRedirect(reverse('resume_app:build'))
+
+def addjob(request):
+	if request.method == 'POST':
+		j = Job(title=request.POST['title'], description = request.POST['description'], skills=request.POST['skills'])
+		j.save()
+	return HttpResponseRedirect(reverse('resume_app:match'))
+def create_tag(request):
+	if request.method == 'POST':
+		user = User.objects.get(username=request.session['logged_in'])
+		t = Tag(user_id=user, name=request.POST['tag_name'])
+		t.save()
+	return HttpResponseRedirect(reverse('resume_app:build'))
 def match(request):
 	request.session['home'] = ''
 	request.session['explore'] = ''
 	request.session['build'] = ''
 	request.session['match'] = 'a'
 	if request.session.get('logged_in',False):
-		return render(request, 'resume_app/index.html', {'request':request})
+		jobs = Job.objects.all()
+		user = User.objects.get(username=request.session['logged_in'])
+		resumes = Resume.objects.filter(user_id=user)
+		add_permission = (user.username == 'job')
+		context={
+				'request':request,
+				'jobs': jobs,
+				'add_permission':add_permission,
+				'resumes':resumes,
+		}
+		return render(request, 'resume_app/match.html', context)
 	return render(request, 'resume_app/match_static.html', {'request':request})
-# 	def render_post(content):
-# 	array_str = content.splitlines()
-# 	new_content = ""
-# 	for temp in array_str:
-# 		if temp=="":
-# 			new_content+="<br />\n"
-# 		else:
-# 			new_content+="<p>"+temp+"</p>\n"
-# 	return new_content
+
+def matched(request, file_name):
+	resume = Resume.objects.filter(resume=file_name)[0]
+	jobs = Job.objects.all()
+	user = User.objects.get(username=request.session['logged_in'])
+	resumes = Resume.objects.filter(user_id=user)
+	max_ratio=0
+	for job in jobs:
+		ratio = StringCompare.matchWords(job.skills.encode('utf-8'), resume.skill_string.encode('utf-8'))
+		print ratio
+		if ratio > max_ratio:
+			max_ref = job
+			max_ratio = ratio
+	context={
+			'request':request,
+			'matched': True,
+			'job': max_ref,
+	}
+	return render(request, 'resume_app/match.html',context)
+
 
 # def index(request, page_num=1):
 # 	tags = Tag.objects.all()
@@ -204,102 +421,3 @@ def match(request):
 # 		context['next'] = True
 
 # 	return render(request, 'blog/index.html', context)
-
-# def newpost(request):
-# 	if 'logged_in' in request.session and request.session['logged_in']:
-# 		tags = Tag.objects.all()
-# 		if request.method == 'POST':
-# 			if request.POST['subject'] and request.POST['content']:
-# 				d = datetime.datetime.now()
-# 				p = Post(subject=request.POST['subject'], content=request.POST['content'], content_rendered=render_post(request.POST['content']), date=d, date_str=d.strftime('%B %d, %Y'))
-# 				p.save()
-# 				for tag in tags:
-# 					if tag.descript in request.POST:
-# 						p.tags.add(tag)
-# 				return HttpResponseRedirect(reverse('blog:index'))
-# 			else:
-# 				context={
-# 					'subject': request.POST['subject'],
-# 					'content': request.POST['content'],
-# 					'error_message': "Please fill in all fields<br />",
-# 					'url': reverse('blog:newpost'),
-# 					'title': "New Post",
-# 					'request': request,
-# 					'tags': tags,
-# 				}
-# 				return render(request, 'blog/newpost.html', context)
-# 		return render(request, 'blog/newpost.html', {'url': reverse('blog:newpost'), 'title': "New Post", 'request': request, 'tags': tags})
-# 	else:
-# 		return HttpResponseRedirect(reverse('blog:index'))
-
-# def update(request, post_id):
-# 	if 'logged_in' in request.session and request.session['logged_in']:
-# 		post = get_object_or_404(Post, pk=post_id)
-# 		tags = Tag.objects.all()
-# 		context={
-# 			'post': post,
-# 			'url': reverse('blog:update', kwargs={'post_id': post_id}),
-# 			'title': "Update",
-# 			'request': request,
-# 			'tags': tags,
-# 		}
-# 		if request.method == 'POST':
-# 			if request.POST['subject'] and request.POST['content']:
-# 				post.subject = request.POST['subject']
-# 				post.content = request.POST['content']
-# 				post.content_rendered = render_post(request.POST['content'])
-# 				post.save()
-# 				for tag in tags:
-# 					if tag.descript in request.POST:
-# 						post.tags.add(tag)
-# 					else:
-# 						post.tags.remove(tag)
-# 				return HttpResponseRedirect(reverse('blog:index'))
-# 			else:
-# 				context['subject'] = request.POST['subject']
-# 				context['content'] = request.POST['content']
-# 				context['error_message'] = "Please fill in all fields<br />"
-# 		return render(request, 'blog/newpost.html', context)
-# 	else:
-# 		return HttpResponseRedirect(reverse('blog:index'))
-
-# def login(request):
-# 	context={'request': request}
-# 	if request.method == 'POST':
-# 		if request.POST['password'] == secrets.login_password:
-# 			request.session['logged_in'] = True
-# 			return HttpResponseRedirect(reverse('blog:index'))
-# 		else:
-# 			context['error_message'] = "Invalid password<br />"
-# 	return render(request, 'blog/login.html', context)
-
-# def logout(request):
-# 	request.session['logged_in'] = False
-# 	return HttpResponseRedirect(reverse('blog:index'))
-
-# def delete(request, post_id):
-# 	if 'logged_in' in request.session and request.session['logged_in']:
-# 		post = get_object_or_404(Post, pk=post_id)
-# 		post.deleted = True
-# 		post.save()
-# 		return HttpResponseRedirect(reverse('blog:index'))
-
-# def post(request, post_id):
-# 	post = get_object_or_404(Post, pk=post_id)
-# 	context={
-# 		'post': post,
-# 		'request': request,
-# 	}
-# 	tags = Tag.objects.all()
-# 	query = Q()
-# 	for tag in tags:
-# 		if request.session[tag.descript]:
-# 			query = query | Q(tags__descript=tag.descript)
-# 	query = Post.objects.filter(query).exclude(deleted=True)
-# 	next = query.filter(pk__gt=post_id)
-# 	if next:
-# 		context['next'] = next[0]
-# 	prev = query.filter(pk__lt=post_id).order_by('id').reverse()
-# 	if prev:
-# 		context['prev'] = prev[0]
-# 	return render(request,'blog/post.html', context)
