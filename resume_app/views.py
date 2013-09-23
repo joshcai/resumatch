@@ -114,92 +114,6 @@ def build(request):
 		return render(request, 'resume_app/build.html', context)
 	return render(request, 'resume_app/build_static.html', {'request':request})
 
-def generate(request):
-	template = r"""
-\documentclass[line,margin]{res}
-%\usepackage{helvetica} % uses helvetica postscript font (download helvetica.sty)
-%\usepackage{newcent}   % uses new century schoolbook postscript font 
-
-\begin{document}"""
-	user = User.objects.get(username=request.session['logged_in'])
-	template+=r"\name{%s}" % user.name
-	template+=r"""
-	\begin{resume}
- 
-\section{OBJECTIVE}       A position in the field of computers with special 
-                interests in business applications programming, 
-                information processing, and management systems. 
- 
- 
-\section{EDUCATION} {\sl Bachelor of Science,} Interdisciplinary Science \\
-                % \sl will be bold italic in New Century Schoolbook (or
-	        % any postscript font) and just slanted in
-		% Computer Modern (default) font
-                Rensselaer Polytechnic Institute, Troy, NY, 
-                expected December 1990 \\
-                Concentration: Computer Science \\
-                Minor: Management 
- 
- 
-\section{COMPUTER \\ SKILLS} {\sl Languages \& Software:} COBOL, IFPS, Focus, 
-         Megacalc, Pascal, Modula2, C, APL, SNOBOL, 
-                FORTRAN, LISP, SPIRES, BASIC, VSPC Autotab, 
-                IBM 370 Assembler, Lotus 1-2-3. \\
-                {\sl Operating Systems:} MTS, TSO, Unix.
- 
-\section{EXPERIENCE} {\sl Business Applications Programmer} \hfill Fall 1990 \\
-                Allied-Signal Bendix Friction Materials Division, 
-                Financial Planning Department, Latham, NY
-                 \begin{itemize}  \itemsep -2pt % reduce space between items
-                 \item Developed four "user friendly" forecasting 
-                    systems each of which produces 18 to 139 
-                    individual reports. 
-                \item   Developed or improved almost all IFPS 
-                    programs used for financial reports. 
-                \end{itemize}
- 
-                {\sl Research Programmer} \hfill            Summer 1990 \\
-                Psychology Department, Rensselaer Polytechnic 
-                Institute 
-                 \begin{itemize}  \itemsep -2pt %reduce space between items
-                 \item Performed computer aided statistical analysis 
-                    of data. 
-                 \end{itemize} 
-                {\sl Assistant Manager} \hfill        Summers 1988-89 \\
-                Thunder Restaurant, Canton, CT
-                  \begin{itemize}
-                   \item Recognized need for, developed, and wrote 
-                    employee training manual. Performed various 
-                    duties including cooking, employee training, 
-                    ordering, and inventory control. 
-                   \end{itemize} 
- 
-\section{COMMUNITY \\ SERVICE}  Organized and directed the 1988 and 1989 Grand 
-                 Marshall Week \newline ``Basketball Marathon.'' A 24 hour 
-                charity event to benefit the Troy Boys Club. Over 
-                250 people participated each year. 
-
-\section{EXTRA-CURRICULAR \\ ACTIVITIES}             
-            Elected {\it House Manager}, Rho Phi Sorority \\
-            Elected {\it Sports Chairman} \\
-            Attended Krannet Leadership Conference \\
-                Headed delegation to Rho Phi Congress \\
-                Junior varsity basketball team \\
-                Participant, seven intramural athletic teams 
- 
-
-\end{resume}
-\end{document}"""
-	file_name = ''.join(user.name.split())
-	f = open(file_name + '.tex', 'w')
-	f.write(template)
-	f.close()
-	print file_name
-	os.system('pdflatex ' + file_name + '.tex')
-	os.system('mv ' + file_name + '.pdf resume_app/generated/')
-	os.system('rm ' + file_name + '.log')
-	os.system('rm ' + file_name + '.tex')
-	return HttpResponseRedirect(reverse('resume_app:generated', kwargs={'file_name':file_name}))
 
 def generated(request, file_name):
 	return render(request, 'resume_app/generated.html', {'request':request, 'file_name':file_name})
@@ -227,14 +141,9 @@ def save_resume(request):
 	if request.method == 'POST':
 		user = User.objects.get(username=request.session['logged_in'])
 		name = request.POST['file_name']
-		skill_string=''
+		skill_string=request.session['skill_string']
 		skill_sets = Skill_Set.objects.filter(user_id=user)
-		for sets in skill_sets:
-			skill_string+=sets.name+' '
-			skills = Skill.objects.filter(skill_set=sets)
-			for skill in skills:
-				skill_string+=skill.name+' '
-		print skill_string
+		
 		private = False
 		if 'private' in request.POST:
 			private = True
@@ -246,7 +155,7 @@ def save_resume(request):
 			)
 		res.save()
 		os.system('cp resume_app/generated/'+request.POST['old_file_name']+'.pdf resume_app/generated/' + request.POST['file_name']+'.pdf')
-	return HttpResponseRedirect(reverse('resume_app:generated', kwargs={'file_name':name}))
+	return HttpResponseRedirect(reverse('resume_app:match'))
 
 	# with open("/home/josh/Desktop/projects/resumemaker/resume_app/generated/template.tex") as template:
 	# 	templ = File(template)
@@ -370,6 +279,7 @@ def matched(request, file_name):
 	user = User.objects.get(username=request.session['logged_in'])
 	resumes = Resume.objects.filter(user_id=user)
 	max_ratio=0
+	max_ref = jobs[0]
 	for job in jobs:
 		ratio = StringCompare.matchWords(job.skills.encode('utf-8'), resume.skill_string.encode('utf-8'))
 		print ratio
@@ -380,44 +290,97 @@ def matched(request, file_name):
 			'request':request,
 			'matched': True,
 			'job': max_ref,
+			'resume': resume,
 	}
 	return render(request, 'resume_app/match.html',context)
 
+def generate(request):
+	user = User.objects.get(username=request.session['logged_in'])
+	query = Q()
+	tags = Tag.objects.filter(user_id=user)
+	if request.method == 'POST':
+		for tag in tags:
+			if tag.name in request.POST:
+				print 'hello'
+				query = query | Q(tags__name=tag.name)
+				print query
+	query = query & Q(user_id=user)
+	education = Edu.objects.filter(query).distinct()
+	print education
+	experience = Exp.objects.filter(query).distinct()
+	honors = Honor.objects.filter(query).distinct()
+	skill_set = Skill_Set.objects.filter(query).distinct()
+	template = r"""
+\documentclass[line,margin]{res}
+%\usepackage{helvetica} % uses helvetica postscript font (download helvetica.sty)
+%\usepackage{newcent}   % uses new century schoolbook postscript font 
 
-# def index(request, page_num=1):
-# 	tags = Tag.objects.all()
-# 	query = Q()
-# 	if 'filter' in request.GET:
-# 		filtered = True
-# 		flag = True
-# 		for tag in tags:
-# 			if tag.descript not in request.GET:
-# 				request.session[tag.descript] = False
-# 			else:
-# 				request.session[tag.descript] = True
-# 				flag = False
-# 				query = query | Q(tags__descript=tag.descript)
-# 		if flag:
-# 			query = Q(deleted=True) & Q(deleted=False) # returns none - better way to do this?
-# 	else:
-# 		filtered = False
-# 		for tag in tags:
-# 			if tag.descript not in request.session: # this line preserves filters through sessions regardless of filter status
-# 				request.session[tag.descript] = True
-# 			elif request.session[tag.descript]:
-# 				query = query | Q(tags__descript=tag.descript)
-# 	blog_entries = Post.objects.order_by('-date').distinct().filter(query).exclude(deleted=True)
-# 	context ={
-# 		'blog_entries': blog_entries[(float(page_num)-1)*5:float(page_num)*5],
-# 		'page_num': page_num,
-# 		'request': request,
-# 		'tags': tags,
-# 		}
-# 	if filtered:
-# 		context['filtered'] = True
-# 	if float(page_num) > 1:
-# 		context['prev'] = True
-# 	if float(page_num)*5 < len(blog_entries): # this can be optimized later - (code is already hitting database once)
-# 		context['next'] = True
+\begin{document}"""
+	user = User.objects.get(username=request.session['logged_in'])
+	template+=r"\name{%s}" % user.name
+	template+=r"""
+	\begin{resume}
+"""
+ 
+ 	if education:
+ 		template+=r'\section{EDUCATION}'
+ 		for edu in education:
+			template+=r"{\sl "+edu.degree+r"}, GPA: " +edu.gpa +r" \\"
+			template+=edu.university+', '+edu.start+"-"+edu.finish
+			if edu.descriptions != '':
+				template+=r'\begin{itemize} \itemsep -2pt'
+				descripts = edu.descriptions.splitlines()
+				for descript in descripts:
+					template+=r'\item '+descript
+				template+=r'\end{itemize} '		
+	if experience:
+		template+=r'\section{EXPERIENCE}'
+		for exp in experience:
+			template+=r"{\sl "+exp.position+r"} \hfill " + exp.start + " - " + exp.finish+r'\\'
+			template+=exp.company+", "+exp.location
+			if exp.descriptions != '':
+				template+=r'\begin{itemize} \itemsep -2pt'
+				descripts = exp.descriptions.splitlines()
+				for descript in descripts:
+					template+=r'\item '+descript
+				template+=r'\end{itemize} '		
+	if skill_set:
+		template+=r'\section{KNOWLEDGE AND SKILLS}'
+		for skill_s in skill_set:
+			template+=r"{\sl "+skill_s.name+r":} "
+			skills = Skill.objects.filter(skill_set=skill_s)
+			for skill in skills:
+				template+=skill.name+", "
+			template+=r"\\"
+	if honors:
+		template+=r'\section{HONORS}'
+		for honor in honors:
+			template+=r"{\sl "+honor.name+r",} " + honor.location + r" \hfill " + honor.date +r'\\'
+			if honor.descriptions != '':
+				template+=r'\begin{itemize} \itemsep -2pt'
+				descripts = honor.descriptions.splitlines()
+				for descript in descripts:
+					template+=r'\item '+descript
+				template+=r'\end{itemize} '	
 
-# 	return render(request, 'blog/index.html', context)
+ 
+
+	template+="""\end{resume}
+\end{document}"""
+	file_name = ''.join(user.name.split())
+	f = open(file_name + '.tex', 'w')
+	f.write(template)
+	f.close()
+	print file_name
+	os.system('pdflatex ' + file_name + '.tex')
+	os.system('mv ' + file_name + '.pdf resume_app/generated/')
+	os.system('rm ' + file_name + '.log')
+	os.system('rm ' + file_name + '.tex')
+	skill_string=''
+	for sets in skill_set:
+			skill_string+=sets.name+' '
+			skills = Skill.objects.filter(skill_set=sets)
+			for skill in skills:
+				skill_string+=skill.name+' '
+	request.session['skill_string'] = skill_string
+	return HttpResponseRedirect(reverse('resume_app:generated', kwargs={'file_name':file_name}))

@@ -16,11 +16,12 @@
     </div>
     <div class="col-md-8 text-right">
       <form action="{% url 'resume_app:generate' %}" method="post" class="form-inline" role="form">
+          {% csrf_token %}
           {% if tags %}
             {% for tag in tags %}
               <div class="checkbox">
                     <label>
-                      <input type="checkbox" name="{{tag.name}}"> {{tag.name}}
+                      <input type="checkbox" name="{{tag.name}}" checked> {{tag.name}}
                     </label>
               </div>
             {% endfor%}

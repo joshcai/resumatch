@@ -19,11 +19,14 @@
 				<button type="submit" class="btn">Add Comment</button>
 			</fieldset>
 		</form>
+		<br />
 		{% if comments %}
 			{% for comment in comments %}
-				{{comment.comment}} by {{comment.user_id.username}}
-				<br />
-				<br />
+				<div class="well">
+					{{comment.comment}} &nbsp; &nbsp;-<em>{{comment.user_id.username}}</em>
+					<br />
+				</div>
+					<br />
 			{% endfor %}	
 		{% endif %}
 
