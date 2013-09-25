@@ -1,4 +1,3 @@
-from nltk.metrics import edit_distance, binary_distance
 import re
 
 def funcCompDescrAndSkill(Listing, Skills):
